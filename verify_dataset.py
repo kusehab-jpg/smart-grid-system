@@ -2,7 +2,7 @@
 verify_dataset.py
 =================
 Run this FIRST to confirm your classData.csv is the correct Kaggle dataset
-and to print the exact column structure and class counts for your thesis §3.3.
+and to print the exact column structure and class counts.
 
 Usage:
     python verify_dataset.py --data classData.csv
@@ -50,7 +50,7 @@ def main(csv_path):
             print(f"  {key} → Class {idx} ({label:8s}): {row['count']:,}  ({pct:.1f}%)")
             total += row["count"]
         print(f"  Total: {total:,}")
-        print("\nUse these counts as the RAW class distribution in Table 4.1 (before SMOTE).")
+        print("\n")
     else:
         print("\nNote: G,C,B,A columns not found. Check column names in your CSV.")
 

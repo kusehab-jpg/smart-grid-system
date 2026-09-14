@@ -1,33 +1,4 @@
 """
-=============================================================================
-CORRECTED Smart-Grid Fault Detection Pipeline
-=============================================================================
-Thesis:  Implementation of a Machine Learning Technique for Fault Detection
-         in Smart-Grid Systems
-
-Dataset: Electrical Fault Detection and Classification
-Creator: Sathyaprakash E (Kaggle username: esathyaprakash)
-URL:     https://www.kaggle.com/datasets/esathyaprakash/
-         electrical-fault-detection-and-classification
-Files:   classData.csv  (used here — fault classification, 6 classes)
-         detect_dataset.csv (binary detection, not used in this study)
-Licence: Check Kaggle page and record here before submission
-
-=============================================================================
-CORRECTIONS APPLIED (Supervisor Review, 31 August 2026)
-=============================================================================
-C1 — SMOTE total recomputed from code, not manually entered
-C2 — FIXED: Split FIRST, then SMOTE inside training only via Pipeline
-C3 — Dataset fully identified above; checksum printed at runtime
-C4 — ALL metrics generated from one saved y_pred file; never typed manually
-C5 — FIXED: HistGradientBoostingClassifier used (supports class_weight)
-         GradientBoostingClassifier does NOT support class_weight
-C6 — Three traditional relay baselines implemented (OC, Distance, Differential)
-         Robustness tests implemented (noise, load, DG, fault resistance)
-C7 — Reproducibility package: split indices, y_pred, pipeline, log saved
-M1 — Group-based split: all rows from same fault class kept coherent
-M5 — McNemar's test and bootstrap CIs reported
-=============================================================================
 
 Dataset Structure (classData.csv):
   Raw inputs  : Ia, Ib, Ic (phase currents), Va, Vb, Vc (phase voltages)
@@ -49,7 +20,7 @@ Feature Engineering (from 6 raw scalar measurements per row):
     - Phase imbalance and symmetry indicators
     - Impedance proxies (|V|/|I|)
     - Cross-phase difference features
-  This is documented honestly in the thesis §3.4.
+  
 
 Usage:
   pip install -r requirements.txt
@@ -926,20 +897,20 @@ def run(csv_path: str):
 
     log.info(f"\n{'='*70}")
     log.info("REPRODUCIBILITY PACKAGE (output/ folder):")
-    log.info("  data_checksum.txt        — SHA-256 of raw CSV (C3)")
-    log.info("  y_true.npy               — ground-truth labels (C4,C7)")
-    log.info("  y_pred_RandomForest.npy  — RF predictions (C4,C7)")
-    log.info("  y_pred_HistGradBoost.npy — HGB predictions (C4,C7)")
-    log.info("  train_indices.npy        — training row indices (C7)")
-    log.info("  test_indices.npy         — test row indices (C7)")
-    log.info("  pipeline_RandomForest.joblib  — complete fitted pipeline (C7)")
-    log.info("  pipeline_HistGradBoost.joblib — complete fitted pipeline (C7)")
-    log.info("  cm_RandomForest.png      — confusion matrix (normalised + counts) (C4)")
-    log.info("  cm_HistGradBoost.png     — confusion matrix (C4)")
+    log.info("  data_checksum.txt        — SHA-256 of raw CSV")
+    log.info("  y_true.npy               — ground-truth labels")
+    log.info("  y_pred_RandomForest.npy  — RF predictions")
+    log.info("  y_pred_HistGradBoost.npy — HGB predictions")
+    log.info("  train_indices.npy        — training row indices")
+    log.info("  test_indices.npy         — test row indices")
+    log.info("  pipeline_RandomForest.joblib  — complete fitted pipeline")
+    log.info("  pipeline_HistGradBoost.joblib — complete fitted pipeline")
+    log.info("  cm_RandomForest.png      — confusion matrix (normalised + counts)")
+    log.info("  cm_HistGradBoost.png     — confusion matrix ")
     log.info("  cv_folds.png             — cross-validation fold scores")
-    log.info("  robustness_RandomForest.csv   — robustness index table (C6)")
-    log.info("  robustness_HistGradBoost.csv  — robustness index table (C6)")
-    log.info("  training_log.txt         — full timestamped run log (C7)")
+    log.info("  robustness_RandomForest.csv   — robustness index table")
+    log.info("  robustness_HistGradBoost.csv  — robustness index table")
+    log.info("  training_log.txt         — full timestamped run log")
     log.info(f"{'='*70}")
     log.info("Run this script again on the same data to reproduce all results.")
 

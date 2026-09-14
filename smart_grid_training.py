@@ -14,25 +14,6 @@ URL    : https://www.kaggle.com/datasets/esathyaprakash/
 
 Models : Random Forest  (sklearn.ensemble.RandomForestClassifier)
          HistGradBoost  (sklearn.ensemble.HistGradientBoostingClassifier)
-         NOTE — Correction C5: GradientBoostingClassifier does NOT support
-         class_weight='balanced'. HistGradientBoostingClassifier is used
-         because it natively supports this parameter.
-
-=============================================================================
-SUPERVISOR CORRECTIONS APPLIED
-=============================================================================
-C1  Class counts printed from code — never typed manually.
-C2  SPLIT applied BEFORE any preprocessing or SMOTE. SMOTE is confined
-    to the training partition only, inside an imbalanced-learn Pipeline.
-C3  Dataset fully identified: file name, citation, column definitions,
-    fault encoding table, SHA-256 checksum printed automatically.
-C4  All metrics generated from saved y_pred arrays — never entered manually.
-C5  HistGradientBoostingClassifier replaces GradientBoostingClassifier.
-C7  Reproducibility package: split indices, y_pred arrays,
-    fitted Pipeline objects, results JSON, training log.
-M5  95% bootstrap confidence intervals and McNemar's paired test reported.
-M6  Cross-study comparison qualified as contextual, not direct.
-
 =============================================================================
 USAGE
 =============================================================================
@@ -92,7 +73,7 @@ sns.set_theme(style="whitegrid")
 B1="#1F4E79"; B2="#2E75B6"; OR="#ED7D31"; GR="#375623"; GY="#595959"; DPI=160
 
 # =============================================================================
-# STAGE 0 — DATASET VERIFICATION  (Correction C3)
+# STAGE 0 — DATASET VERIFICATION  
 # =============================================================================
 def verify_dataset(csv_path):
     log.info("="*70)
@@ -117,7 +98,7 @@ def verify_dataset(csv_path):
     return df
 
 # =============================================================================
-# STAGE 1 — FAULT LABEL ENCODING  (Correction C1, C3)
+# STAGE 1 — FAULT LABEL ENCODING  
 # =============================================================================
 def encode_labels(df):
     log.info("\n"+"="*70)
@@ -178,11 +159,11 @@ def engineer_features(df):
     return X,y,feat_names
 
 # =============================================================================
-# STAGE 3 — SPLIT FIRST  (Correction C2)
+# STAGE 3 — SPLIT FIRST  
 # =============================================================================
 def split_first(X,y):
     log.info("\n"+"="*70)
-    log.info("STAGE 3 — STRATIFIED SPLIT (CORRECTION C2: SPLIT BEFORE SMOTE)")
+    log.info("STAGE 3 — STRATIFIED SPLIT")
     log.info("="*70)
     X_dev,X_test,y_dev,y_test=train_test_split(X,y,test_size=TEST_RATIO,
                                                 stratify=y,random_state=SEED)
@@ -200,7 +181,7 @@ def split_first(X,y):
     return X_train,X_val,X_test,y_train,y_val,y_test
 
 # =============================================================================
-# STAGE 4 — BUILD PIPELINES  (Correction C2, C5)
+# STAGE 4 — BUILD PIPELINES  
 # =============================================================================
 def build_rf_pipeline():
     """Random Forest Pipeline. SMOTE fitted inside each training fold."""
@@ -215,8 +196,6 @@ def build_rf_pipeline():
 def build_hgb_pipeline():
     """
     HistGradientBoosting Pipeline.
-    CORRECTION C5: HistGradientBoostingClassifier (NOT GradientBoostingClassifier)
-    — the latter does NOT support class_weight. HistGBT does.
     """
     return ImbPipeline([
         ("imputer",SimpleImputer(strategy="median")),
@@ -228,7 +207,7 @@ def build_hgb_pipeline():
                    validation_fraction=0.1,n_iter_no_change=20,random_state=SEED))])
 
 # =============================================================================
-# STAGE 5 — CROSS-VALIDATION TRAINING  (Correction C2)
+# STAGE 5 — CROSS-VALIDATION TRAINING
 # =============================================================================
 def train_with_cv(pipeline,X_train,y_train,model_name):
     log.info(f"\n{'='*70}\nSTAGE 5 — TRAINING: {model_name}\n{'='*70}")
@@ -237,7 +216,7 @@ def train_with_cv(pipeline,X_train,y_train,model_name):
     cv_scores=cross_val_score(pipeline,X_train,y_train,cv=cv,
                                scoring="f1_macro",n_jobs=-1)
     log.info(f"CV ({N_CV_FOLDS}-fold) in {time.time()-t0:.1f}s")
-    log.info(f"Fold F1-macro : {[f'{s:.4f}' for s in cv_scores]}")
+    log.info(f"Fold F1-macro: {[f'{s:.4f}' for s in cv_scores]}")
     log.info(f"Mean F1-macro : {cv_scores.mean():.4f}  SD: {cv_scores.std():.4f}")
     log.info("→ Copy Mean and SD into Table 4.2 CV row")
     pipeline.fit(X_train,y_train)
@@ -245,11 +224,11 @@ def train_with_cv(pipeline,X_train,y_train,model_name):
     return pipeline,cv_scores
 
 # =============================================================================
-# STAGE 6 — SINGLE-USE TEST EVALUATION  (Correction C4)
+# STAGE 6 — SINGLE-USE TEST EVALUATION
 # =============================================================================
 def evaluate(pipeline,X_test,y_test,model_name,feat_names,cv_scores):
     log.info(f"\n{'='*70}\nSTAGE 6 — TEST SET EVALUATION: {model_name}\n{'='*70}")
-    log.info("Test set used ONCE. Copy values below into thesis (Correction C4).")
+    log.info("Test set used ONCE.")
     safe=model_name.replace(" ","_")
     y_pred=pipeline.predict(X_test)
     np.save(OUTPUT_DIR/"y_true.npy",y_test)
@@ -267,14 +246,14 @@ def evaluate(pipeline,X_test,y_test,model_name,feat_names,cv_scores):
     cmi  =confusion_matrix(y_test,y_pred)
     cmn  =confusion_matrix(y_test,y_pred,normalize="true")
 
-    log.info(f"\n--- OVERALL METRICS (copy into Table 4.3) ---")
+    log.info(f"\n--- OVERALL METRICS ---")
     log.info(f"  Accuracy          : {acc:.4f}")
     log.info(f"  Precision (macro) : {prec:.4f}")
     log.info(f"  Recall    (macro) : {rec:.4f}")
     log.info(f"  F1-Score  (macro) : {f1m:.4f}")
     log.info(f"  F1-Score  (wtd)   : {f1w:.4f}")
 
-    log.info(f"\n--- PER-CLASS METRICS (copy into Table 4.4) ---")
+    log.info(f"\n--- PER-CLASS METRICS ")
     log.info(f"  {'Class':10}  {'Prec':>8}  {'Rec':>8}  {'F1':>8}  {'Support':>8}")
     log.info("  "+"-"*50)
     for i in range(min(N_CLASSES,len(f1c))):
@@ -286,7 +265,7 @@ def evaluate(pipeline,X_test,y_test,model_name,feat_names,cv_scores):
     log.info(f"\n--- CLASSIFICATION REPORT ---\n"
              +classification_report(y_test,y_pred,
                target_names=LABELS[:len(np.unique(y_test))],zero_division=0))
-    log.info(f"--- INTEGER CONFUSION MATRIX (supervisor requires counts) ---\n{cmi}")
+    log.info(f"--- INTEGER CONFUSION MATRIX ---\n{cmi}")
 
     # Inference time
     times=[]
@@ -295,7 +274,7 @@ def evaluate(pipeline,X_test,y_test,model_name,feat_names,cv_scores):
         times.append((time.perf_counter()-t0)*1000)
     t_m=float(np.mean(times)); t_s=float(np.std(times))
     log.info(f"\nInference time : {t_m:.2f} +/- {t_s:.2f} ms/sample ({N_INFER} reps)")
-    log.info("→ Record hardware specs (CPU, RAM) in thesis §3.2.2")
+    log.info("→ Record hardware specs (CPU, RAM)")
 
     # Bootstrap CI (Correction M5) — paired resampling
     rng=np.random.default_rng(SEED)
@@ -304,7 +283,7 @@ def evaluate(pipeline,X_test,y_test,model_name,feat_names,cv_scores):
            for _ in range(N_BOOT)]
     ci=np.percentile(boots,[2.5,97.5])
     log.info(f"95% Bootstrap CI  : [{ci[0]:.4f}, {ci[1]:.4f}]  ({N_BOOT} iterations)")
-    log.info("→ Copy CI into Table 4.3 '95% CI' column (Correction M5)")
+    log.info("→")
 
     # Plots
     _plot_confusion_matrix(cmi,cmn,model_name)
@@ -326,10 +305,10 @@ def evaluate(pipeline,X_test,y_test,model_name,feat_names,cv_scores):
             "cv_std":round(float(cv_scores.std()),4),"y_pred":y_pred}
 
 # =============================================================================
-# STAGE 7 — McNEMAR'S TEST  (Correction M5)
+# STAGE 7 — McNEMAR'S TEST 
 # =============================================================================
 def mcnemar_test(y_test,y_rf,y_hgb):
-    log.info(f"\n{'='*70}\nSTAGE 7 — McNEMAR'S PAIRED TEST (Correction M5)\n{'='*70}")
+    log.info(f"\n{'='*70}\nSTAGE 7 — McNEMAR'S PAIRED TEST \n{'='*70}")
     b=int(np.sum((y_rf==y_test)&(y_hgb!=y_test)))
     c=int(np.sum((y_rf!=y_test)&(y_hgb==y_test)))
     log.info(f"  b (RF correct, HGB wrong) = {b}")

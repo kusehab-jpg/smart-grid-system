@@ -1,4 +1,4 @@
-# Corrected requirements for Smart-Grid Fault Detection Thesis
+# Smart-Grid Fault Detection Thesis
 # Record exact versions after installation with: pip freeze > requirements_frozen.txt
 
 scikit-learn>=1.4.0
